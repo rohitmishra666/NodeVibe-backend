@@ -1,12 +1,10 @@
 const asyncHandler = (requestHandler) => {
     (req, res, next) => {
-        Promise.resolve(requestHandler(req, res, next)).catch((err)=> next(err))
-    }
-}
+        Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err));
+    };
+};
 
-export {asyncHandler}
-
-
+export { asyncHandler };
 
 /* THIS IS FOR ASYNC AWAIT SYNTAX */
 
@@ -16,7 +14,7 @@ export {asyncHandler}
 
 // const asyncHandler = (fn) => (req, res, next) => {
 //     try {
-        
+
 //     } catch (error) {
 //         res.status(err.code || 500).json({
 //             success: false,
