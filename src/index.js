@@ -1,9 +1,10 @@
 // require ('dotenv').config({path: './env'})
-import dotenv from "dotenv";
-import mongoose from "mongoose";
+// import mongoose from "mongoose";
 // import { DB_NAME } from "./constants";
-import connectDB from "./db/index.js";
 
+import dotenv from "dotenv";
+import connectDB from "./db/index.js";
+import {app} from './app.js'
 
 dotenv.config({
     path: "./.env",
@@ -12,7 +13,7 @@ dotenv.config({
 connectDB()
     .then(() => {
         app.listen(process.env.PORT || 8000, () => {
-            console.log(` server is running at ${process.env.PORT}`);
+            console.log(` Server is running at ${process.env.PORT}`);
         });
     })
     .catch((err) => {
