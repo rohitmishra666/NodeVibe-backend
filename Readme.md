@@ -1,4 +1,4 @@
-#VIDEO HUB BACKEND
+# VIDEO HUB BACKEND
 VIDEO HUB Backend is the backend component of a complete video hosting website built with Node.js, Express.js, MongoDB, Mongoose, JWT, bcrypt, and more. It incorporates standard practices like JWT authentication, bcrypt hashing, access tokens, refresh tokens, and more.
 
 Features
