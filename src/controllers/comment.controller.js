@@ -18,21 +18,51 @@ const getVideoComments = asyncHandler(async (req, res) => {
             },
             {
                 $lookup: {
-                    from: "user",
+                    from: "users",
                     localField: "_id",
                     foreignField: "owner",
                     as: "commentOwner",
                 }
             },
             {
+                $lookup: {
+                    from: "likes",
+                    localField: "_id",
+                    foreignField: "comment",
+                    as: "likes"
+                }
+            },
+            {
                 $addFields: {
                     owner: {
                         $first: "commentOwner"
+                    },
+                    likesCount: {
+                        $size: "$likes"
+                    },
+                    isLiked: {
+                        $cond: {
+                            if: { $in: [mongoose.Types.ObjectId(req.user?._id), "$likes.likedBy"] },
+                            then: true,
+                            else: false
+                        }
                     }
+                }
+            },
+            {
+                project: {
+                    content: 1,
+                    owner: {
+                        username: 1,
+                        avatar: 1,
+                        fullname: 1
+                    },
+                    likesCount: 1,
+                    isLiked: 1
                 }
             }
         ], { page, limit }, { sort: { createdAt: -1 } })
-        
+
         if (!comments?.length()) {
             throw new ApiError(406, "No Comments on this Video!")
         }
