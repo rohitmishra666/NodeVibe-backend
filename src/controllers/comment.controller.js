@@ -78,25 +78,28 @@ const getVideoComments = asyncHandler(async (req, res) => {
 
 const addComment = asyncHandler(async (req, res) => {
     // TODO: add a comment to a video
-    asyncHandler(async (req, res) => {
+    const { videoId } = req.params
+    const { content } = req.body
+    const { user } = req.body
 
-        const { videoId } = req.params
-        const { content } = req.body
-        const { user } = req.body
-
-        const newComment = new Comment({
-            content,
-            video: videoId,
-            owner: user._id
-        })
-
-        try {
-            await newComment.save();
-        } catch (error) {
-            throw new ApiError(405, "Problem in Adding Comment!")
-        }
+    const newComment = new Comment({
+        content,
+        video: videoId,
+        owner: user._id
     })
+
+    try {
+        await newComment.save();
+    } catch (error) {
+        throw new ApiError(405, "Problem in Adding Comment!")
+    }
+
+    return res
+        .status(201)
+        .json(new ApiResponse(201, { newComment }, "Comment Added Successfully!"))
+
 })
+
 
 const updateComment = asyncHandler(async (req, res) => {
     // TODO: update a comment
@@ -120,9 +123,18 @@ const deleteComment = asyncHandler(async (req, res) => {
     const { commentId } = req.body
 
     try {
-        await Comment.findByIdAndDelete(commentId)
+        const deletedComment = await Comment.findByIdAndDelete(commentId)
+
+        if(!deletedComment){
+            throw new ApiError(407, "Comment Not Found!")
+        }
+
+        return res
+            .status(200)
+            .json(new ApiResponse(200, "Comment Deleted Successfully!"))
+
     } catch (error) {
-        throw new ApiError(408, error?.message || "Problem in Deleting Comment!")
+        throw new ApiError(408, error?.message || "Error in Deleting Comment!")
     }
 })
 
