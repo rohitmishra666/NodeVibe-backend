@@ -1,6 +1,5 @@
-import mongoose, { isValidObjectId } from "mongoose"
+import { isValidObjectId } from "mongoose"
 import { Video } from "../models/video.model.js"
-import { User } from "../models/user.model.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
@@ -9,7 +8,7 @@ import { uploadOnCloudinary, deleteOnCloudinary } from "../utils/cloudinary.js"
 
 const getAllVideos = asyncHandler(async (req, res) => {
 
-    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
+    const { page = 1, limit = 10, query , sortBy = "createdAt", sortType = -1 } = req.body
     //TODO: get all videos based on query, sort, pagination
 
     const options = {
@@ -17,18 +16,30 @@ const getAllVideos = asyncHandler(async (req, res) => {
         limit: parseInt(limit, 10),
         sort: { [sortBy]: sortType }
     }
+    console.log(query);
 
-    const pipeline = [
+    const video = await Video.aggregate([
         {
-            $match: {
-                title: {
-                    $regex: new RegExp(query, "i")
+            $search: {
+                index: "title_text",
+                text: {
+                    query: query,
+                    path: ["title", "description"],
+                    fuzzy: {}
                 }
             }
+        },
+        {
+            $project: {
+                title: 1,
+                videoFile: 1,
+                thumbnail: 1,
+                duration: 1,
+                owner: 1,
+                isPublished: 1
+            }
         }
-    ];
-
-    const video = await Video.aggregatePaginate({ pipeline }, options)
+    ], options)
 
     if (!video) {
         throw new ApiError(404, "No videos found!")
@@ -63,7 +74,10 @@ const publishAVideo = asyncHandler(async (req, res) => {
         throw new ApiError(500, "Failed to upload video or thumbnail on cloudinary")
     }
 
-    const video = new Video.create({
+    // console.log(videoUrl);
+    console.log(thumbnailUrl);
+
+    const video = await Video.create({
         title,
         description,
         videoFile: videoUrl.url,
@@ -161,17 +175,35 @@ const deleteVideo = asyncHandler(async (req, res) => {
 
     const video = await Video.findById(videoId);
 
-    if (!req.user?._id.toString() !== video.owner.toString()) {
+    
+    if (req.user?._id.toString() !== video.owner.toString()) {
+        console.log(video.owner.toString());
+        console.log(req.user?._id.toString());
         throw new ApiError(401, "Unauthorized to delete this video")
     }
 
     const deletedVideo = await Video.findByIdAndDelete(videoId);
 
     if (!deletedVideo) {
-        throw new ApiError(500, "Failed to delete video")
+        throw new ApiError(500, "Failed to delete video!")
     }
 
     //TODO:- delete video from cloudinary
+    console.log(deletedVideo.videoFile);
+
+    const temp = deletedVideo.videoFile.lastIndexOf('/')
+    const publicIdOfVideo = deletedVideo.videoFile.slice(temp + 1, deletedVideo.videoFile.lastIndexOf('.'))
+    
+
+    const temp2 = deletedVideo.thumbnail.lastIndexOf('/')
+    const publicIdOfThumbnail = deletedVideo.thumbnail.slice(temp2 + 1, deletedVideo.thumbnail.lastIndexOf('.'))
+
+    const videoUrl = await deleteOnCloudinary(publicIdOfVideo, "video")
+    const thumbnailUrl = await deleteOnCloudinary(publicIdOfThumbnail)
+    console.log(videoUrl);
+    console.log(thumbnailUrl);
+
+    
 
     return res
         .status(200)

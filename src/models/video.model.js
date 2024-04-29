@@ -42,13 +42,11 @@ const videoSchema = new Schema(
     }
 )
 
+
 videoSchema.plugin(mongooseAggregatePaginate)
 
 export const Video = mongoose.model("Video", videoSchema);
 
-// Create an index on the 'title' field
 
-Video.createIndexes({ title: 1 }, function (err, result) {
-    console.log(result);
-});
+
 
