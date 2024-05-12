@@ -8,90 +8,84 @@ const getVideoComments = asyncHandler(async (req, res) => {
     //TODO: get all comments for a video
     const { videoId } = req.params
     const { page = 1, limit = 10 } = req.query
+    const options = {
+        page: parseInt(page, 10),
+        limit: parseInt(limit, 10)
+    }
 
     try {
-        const comments = await Comment.aggregatePaginate([
+        const comments = await Comment.aggregate([
             {
                 $match: {
-                    video: mongoose.Types.ObjectId(videoId)
+                    video: mongoose.Types.ObjectId.createFromHexString(videoId)
                 }
             },
             {
                 $lookup: {
                     from: "users",
-                    localField: "_id",
-                    foreignField: "owner",
-                    as: "commentOwner",
-                }
-            },
-            {
-                $lookup: {
-                    from: "likes",
-                    localField: "_id",
-                    foreignField: "comment",
-                    as: "likes"
+                    localField: "owner",
+                    foreignField: "_id",
+                    as: "result",
+                    pipeline: [
+                        {
+                            $project: {
+                                username: 1,
+                                fullName: 1,
+                                avatar: 1
+                            }
+                        }
+                    ]
                 }
             },
             {
                 $addFields: {
-                    owner: {
-                        $first: "commentOwner"
-                    },
-                    likesCount: {
-                        $size: "$likes"
-                    },
-                    isLiked: {
-                        $cond: {
-                            if: { $in: [mongoose.Types.ObjectId(req.user?._id), "$likes.likedBy"] },
-                            then: true,
-                            else: false
-                        }
+                    commentOwner: {
+                        $first: "$result"
                     }
                 }
             },
             {
-                project: {
-                    content: 1,
-                    owner: {
-                        username: 1,
-                        avatar: 1,
-                        fullname: 1
-                    },
-                    likesCount: 1,
-                    isLiked: 1
+                $sort: {
+                    createdAt: -1
                 }
             }
-        ], { page, limit }, { sort: { createdAt: -1 } })
+        ], options)
 
-        if (!comments?.length()) {
-            throw new ApiError(406, "No Comments on this Video!")
+        if (!comments) {
+            throw new ApiError(404, "No Comments Found!", {})
         }
 
         return res
             .status(200)
-            .json(new ApiResponse(200, { comments }, "Comments Loaded Successfully!"))
-
+            .json(new ApiResponse(200, "ALL OK!", { comments }))
+            
     } catch (error) {
-        throw new ApiError(405, "Problem in Loading Comments!")
+        throw new ApiError(404, error?.message || "Error in fetching comments!")
     }
+
 })
 
 const addComment = asyncHandler(async (req, res) => {
     // TODO: add a comment to a video
     const { videoId } = req.params
     const { content } = req.body
-    const { user } = req.body
+    const user = req.user
 
-    const newComment = new Comment({
-        content,
+    console.log(user);
+    console.log(user?._id);
+
+    if (!user) {
+        throw new ApiError(401, "User Not Found!")
+    }
+
+    const newComment = await Comment.create({
+        content: content,
         video: videoId,
-        owner: user._id
+        owner: user?._id
     })
 
-    try {
-        await newComment.save();
-    } catch (error) {
-        throw new ApiError(405, "Problem in Adding Comment!")
+    if (!newComment) {
+        throw new ApiError(406, "Error in Adding Comment!")
     }
 
     return res
@@ -123,15 +117,21 @@ const deleteComment = asyncHandler(async (req, res) => {
     const { commentId } = req.body
 
     try {
-        const deletedComment = await Comment.findByIdAndDelete(commentId)
 
-        if(!deletedComment){
-            throw new ApiError(407, "Comment Not Found!")
+        const comment = await Comment.findById(commentId)
+
+        if (req.user?._id.toString() !== comment.owner.toString()) {
+            throw new ApiError(404, "You are not authorised to delete this comment!")
         }
 
-        return res
-            .status(200)
-            .json(new ApiResponse(200, "Comment Deleted Successfully!"))
+
+        const deletedComment = await Comment.findByIdAndDelete(commentId);
+
+        if (!deletedComment) {
+            return res
+                .status(200)
+                .json(new ApiResponse(200, "Comment Deleted Successfully!"))
+        }
 
     } catch (error) {
         throw new ApiError(408, error?.message || "Error in Deleting Comment!")
