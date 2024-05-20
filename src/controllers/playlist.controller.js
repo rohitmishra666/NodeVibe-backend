@@ -3,8 +3,8 @@ import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 
-
 const createPlaylist = asyncHandler(async (req, res) => {
+    
     const { name, description } = req.body
 
     //TODO: create playlist
@@ -23,8 +23,6 @@ const createPlaylist = asyncHandler(async (req, res) => {
     return res
         .status(201)
         .json(new ApiResponse(201, { playlist }, "Playlist created successfully!"))
-
-
 })
 
 const getUserPlaylists = asyncHandler(async (req, res) => {
@@ -58,6 +56,7 @@ const getPlaylistById = asyncHandler(async (req, res) => {
 })
 
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
+
     const { playlistId, videoId } = req.params
 
     try {

@@ -6,8 +6,26 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 import { uploadOnCloudinary, deleteOnCloudinary } from "../utils/cloudinary.js"
 import { User } from "../models/user.model.js"
 
-
 const getAllVideos = asyncHandler(async (req, res) => {
+    
+    const allVideos = await Video.aggregate([
+        {
+            $match: {
+                isPublished: true
+            }
+        }
+    ])
+
+    if (!allVideos) {
+        throw new ApiError(404, "No videos found!")
+    }
+    
+    return res
+        .status(200)
+        .json(new ApiResponse(200, { allVideos }, "All videos found! "))
+})
+
+const searchVideos = asyncHandler(async (req, res) => {
 
     const { page = 1, limit = 10, query = "abc", sortBy = "createdAt", sortType = -1 } = req.body
     //TODO: get all videos based on query, sort, pagination
@@ -49,7 +67,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(200, { video }, "Videos found! "))
+        .json(new ApiResponse(200, { video }, "Videos found!"))
 
 })
 
@@ -125,7 +143,7 @@ const getVideoById = asyncHandler(async (req, res) => {
                     $cond: {
                         if: {
                             $in: [
-                                "65e0e1f93be73472eaa7fcfe",
+                                videoId,
                                 "$likes.likedBy"
                             ]
                         },
@@ -159,7 +177,7 @@ const getVideoById = asyncHandler(async (req, res) => {
                                 $cond: {
                                     if: {
                                         $in: [
-                                            "65e0e1f93be73472eaa7fcfe",
+                                            videoId,
                                             "$subscribers.subscriber"
                                         ]
                                     },
@@ -192,6 +210,7 @@ const getVideoById = asyncHandler(async (req, res) => {
                 description: 1,
                 views: 1,
                 likesCount: 1,
+                owner: 1,
                 isLiked: 1,
             }
         },
@@ -366,5 +385,6 @@ export {
     getVideoById,
     updateVideo,
     deleteVideo,
-    togglePublishStatus
+    togglePublishStatus,
+    searchVideos
 }

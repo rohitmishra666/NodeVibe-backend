@@ -6,6 +6,7 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 
 const getVideoComments = asyncHandler(async (req, res) => {
     //TODO: get all comments for a video
+
     const { videoId } = req.params
     const { page = 1, limit = 10 } = req.query
     const options = {
@@ -66,13 +67,11 @@ const getVideoComments = asyncHandler(async (req, res) => {
 })
 
 const addComment = asyncHandler(async (req, res) => {
+
     // TODO: add a comment to a video
     const { videoId } = req.params
     const { content } = req.body
     const user = req.user
-
-    console.log(user);
-    console.log(user?._id);
 
     if (!user) {
         throw new ApiError(401, "User Not Found!")
@@ -96,20 +95,19 @@ const addComment = asyncHandler(async (req, res) => {
 
 
 const updateComment = asyncHandler(async (req, res) => {
-    // TODO: update a comment
 
+    // TODO: update a comment
     const { content, commentId } = req.body
 
-    try {
         const updatedComment = await Comment.findByIdAndUpdate(commentId, { content }, { new: true })
+        
+        if(!updatedComment) {
+            throw new ApiError(404, "Comment Not Found!")
+        }
 
         return res
             .status(200)
-            .json(new ApiResponse(200, { updatedComment }, "Comment Updated Successfully!"))
-
-    } catch (error) {
-        throw new ApiError(405, error?.message || "Problem in Updating Comment!")
-    }
+            .json(new ApiResponse(200, { updatedComment }, "Comment Updated Successfully!")) 
 })
 
 const deleteComment = asyncHandler(async (req, res) => {

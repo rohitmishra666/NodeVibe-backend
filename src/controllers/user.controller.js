@@ -200,6 +200,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 
     try {
+        
         const decodedToken = jwt.verify(
             incomingRefreshToken,
             process.env.REFRESH_TOKEN_SECRET
@@ -268,6 +269,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     // return res
     //     .status(200)
     //     .json(200, req.user, "current user fetched successfully")
+
     return res
         .status(200)
         .json(new ApiResponse(200, req.user, "current user fetched successfully"))

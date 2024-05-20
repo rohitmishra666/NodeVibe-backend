@@ -5,8 +5,10 @@ import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 
 const toggleVideoLike = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
+
     //TODO: toggle like on video
+    const { videoId } = req.params
+    
     if (!isValidObjectId(videoId)) {
         return (new ApiError(400, 'Invalid video id!'))
     }
@@ -16,7 +18,7 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
         await Like.findByIdAndDelete(likedAlready._id)
         return res
             .status(200)
-            .json(new ApiResponse(200, 'Video unliked successfully', { liked: false }))
+            .json(new ApiResponse(200,{ liked: true } ,'Video unliked' ))
     }
 
     const newLike = Like.create({
@@ -26,7 +28,7 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(200, 'Video liked successfully', { liked: true }))
+        .json(new ApiResponse(200,{ liked: false } ,'Video liked successfully'))
 
 })
 

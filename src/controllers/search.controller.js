@@ -4,8 +4,8 @@ import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 
 const searchController = asyncHandler(async (req, res) => {
-    const { query, limit = 10, sortBy = "createdAt", sortType = -1 } = req.body;
-
+    const { query="z", limit = 10, sortBy = "createdAt", sortType = -1 } = req.body;
+    
     const options = {
         limit: parseInt(limit, 10),
         sort: { [sortBy]: sortType }
@@ -47,7 +47,7 @@ const searchController = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(200, { searchResult }, " search results found "))
+        .json(new ApiResponse(200, { searchResult }, " search results found"))
 })
 
 export { searchController }
