@@ -73,6 +73,7 @@ const addComment = asyncHandler(async (req, res) => {
     const { content } = req.body
     const user = req.user
 
+    console.log(user, "USER")
     if (!user) {
         throw new ApiError(401, "User Not Found!")
     }
@@ -93,7 +94,6 @@ const addComment = asyncHandler(async (req, res) => {
 
 })
 
-
 const updateComment = asyncHandler(async (req, res) => {
 
     // TODO: update a comment
@@ -112,7 +112,7 @@ const updateComment = asyncHandler(async (req, res) => {
 
 const deleteComment = asyncHandler(async (req, res) => {
     // TODO: delete a comment
-    const { commentId } = req.body
+    const { commentId } = req.params
 
     try {
 
@@ -127,9 +127,12 @@ const deleteComment = asyncHandler(async (req, res) => {
 
         if (!deletedComment) {
             return res
-                .status(200)
-                .json(new ApiResponse(200, "Comment Deleted Successfully!"))
+                .status(409)
+                .json(new ApiResponse(409, {},"Error in deleting comment!"))
         }
+        return res
+            .status(200)
+            .json(new ApiResponse(200, { deletedComment }, "Comment Deleted Successfully!"))
 
     } catch (error) {
         throw new ApiError(408, error?.message || "Error in Deleting Comment!")

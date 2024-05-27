@@ -8,7 +8,7 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
 
     //TODO: toggle like on video
     const { videoId } = req.params
-    
+
     if (!isValidObjectId(videoId)) {
         return (new ApiError(400, 'Invalid video id!'))
     }
@@ -18,7 +18,7 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
         await Like.findByIdAndDelete(likedAlready._id)
         return res
             .status(200)
-            .json(new ApiResponse(200,{ liked: true } ,'Video unliked' ))
+            .json(new ApiResponse(200, { liked: true }, 'Video unliked'))
     }
 
     const newLike = Like.create({
@@ -28,14 +28,14 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(200,{ liked: false } ,'Video liked successfully'))
+        .json(new ApiResponse(200, { liked: false }, 'Video liked successfully'))
 
 })
 
 const toggleCommentLike = asyncHandler(async (req, res) => {
-    const { commentId } = req.params
     //TODO: toggle like on comment
-
+    
+    const { commentId } = req.params
     if (!isValidObjectId(commentId)) {
         return (new ApiError(400, 'Invalid comment id!'))
     }
@@ -47,7 +47,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
         await Like.findByIdAndDelete(likedAlready._id)
         return res
             .status(200)
-            .json(new ApiResponse(200, 'Comment unliked successfully', { liked: false }))
+            .json(new ApiResponse(200,  { liked: false }, 'Comment unliked successfully'))
     }
 
     const newLike = Like.create({
@@ -57,7 +57,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(200, 'Comment liked successfully', { liked: true }))
+        .json(new ApiResponse(200, { liked: true }, 'Comment liked successfully'))
 
 })
 

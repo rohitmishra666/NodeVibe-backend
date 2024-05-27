@@ -10,11 +10,38 @@ const getAllVideos = asyncHandler(async (req, res) => {
     
     const allVideos = await Video.aggregate([
         {
-            $match: {
-                isPublished: true
+          $match: {
+            isPublished: true
+          }
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "owner",
+            foreignField: "_id",
+            as: "result",
+          }
+        },
+        {
+          $addFields: {
+            result: {$first : "$result"},
+          }
+        },
+        {
+          $addFields: {
+            username: "$result.username",
+            avatar:"$result.avatar",
+            ownerId: "$result._id",
+            fullName: "$result.fullName"
+          }
+        },
+        {
+            $project: {
+                result: 0
+            
             }
         }
-    ])
+      ])
 
     if (!allVideos) {
         throw new ApiError(404, "No videos found!")
@@ -80,22 +107,26 @@ const publishAVideo = asyncHandler(async (req, res) => {
         throw new ApiError(422, "Title and description are required")
     }
 
+    // console.log(videoFile, "video file front end");
+    // console.log(thumbnail, "thumbnail front end");
     if (!videoFile || !thumbnail) {
         throw new ApiError(423, "Video file and thumbnail are required")
     }
 
     const localVideoPath = videoFile[0].path
     const localThumbnailPath = thumbnail[0].path
+    // console.log(localVideoPath, "local Video path");
 
     const videoUrl = await uploadOnCloudinary(localVideoPath)
     const thumbnailUrl = await uploadOnCloudinary(localThumbnailPath)
+
+    // console.log(videoUrl, "cloudinary response");
+    // console.log(thumbnailUrl);
 
     if (!videoUrl || !thumbnailUrl) {
         throw new ApiError(500, "Failed to upload video or thumbnail on cloudinary")
     }
 
-    // console.log(videoUrl);
-    console.log(thumbnailUrl);
 
     const video = await Video.create({
         title,

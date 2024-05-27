@@ -9,12 +9,13 @@ cloudinary.config({
 
 const uploadOnCloudinary = async (localFilePath) => {
     try {
+        console.log("local FIle path", localFilePath);
         if (!localFilePath) return null;
         const response = await cloudinary.uploader.upload(localFilePath, {
             resource_type: "auto"
         });
         // file has been uploaded
-        // console.log("File is uploaded", response.url);
+        console.log("File is uploaded", response.url);
         fs.unlinkSync(localFilePath)
         return response;
     } catch (error) {
@@ -29,7 +30,6 @@ const deleteOnCloudinary = async (filePath, text="image") => {
         .destroy(filePath,
             { type: 'upload', resource_type: text})
         .then((result) => {
-
             console.log(result);
             return result;
         })

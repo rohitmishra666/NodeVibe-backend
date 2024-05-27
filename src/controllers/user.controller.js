@@ -11,7 +11,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
         const user = await User.findById(userId)
         const accessToken = user.generateAccessToken();
         const refreshToken = user.generateRefreshToken();
-        
+
         user.refreshToken = refreshToken
         await user.save({ validateBeforeSave: false })
         return { accessToken, refreshToken }
@@ -57,15 +57,16 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(409, "User with email or userame already exists")
     }
 
-    console.log(req.files)
+    console.log(req.files, 'req.files')
 
+    // console.log(req.files?.avatar[0]?.path, 'req.files?.avatar[0]?.path')
     const avatarLocalPath = req.files?.avatar[0]?.path;
-    
     const coverImageLocalPath = req.files?.coverImage[0]?.path;
 
     if (!avatarLocalPath) throw new ApiError(400, "Avatar File is required")
 
     const avatar = await uploadOnCloudinary(avatarLocalPath)
+    console.log(avatar, 'avatar')
     const coverImage = await uploadOnCloudinary(coverImageLocalPath)
 
     if (!avatar) {
@@ -102,12 +103,12 @@ const registerUser = asyncHandler(async (req, res) => {
         .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", refreshToken, options)
         .json(
-            new ApiResponse(200, 
+            new ApiResponse(200,
                 {
                     user: createdUser,
                     accessToken,
                     refreshToken
-                }, 
+                },
                 "User registered successfully.")
         )
 });
@@ -192,15 +193,16 @@ const logoutUser = asyncHandler(async (req, res) => {
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
+
     const incomingRefreshToken =
-    req.cookies.refreshToken || req.body.refreshToken;
+        req.cookies.refreshToken || req.body.refreshToken;
 
     if (!incomingRefreshToken) {
         throw new ApiError(401, "unauthorised request")
     }
 
     try {
-        
+
         const decodedToken = jwt.verify(
             incomingRefreshToken,
             process.env.REFRESH_TOKEN_SECRET
@@ -435,6 +437,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
 })
 
 const getWatchHistory = asyncHandler(async (req, res) => {
+    
     const user = User.aggregate([
         {
             $match: {

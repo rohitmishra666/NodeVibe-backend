@@ -14,7 +14,7 @@ const getChannelStats = asyncHandler(async (req, res) => {
     const totalSubcribers = await Subscription.aggregate([
         {
             $match: {
-                channel: mongoose.Types.ObjectId(userId)
+                channel: new mongoose.Types.ObjectId(userId)
             }
         },
         {
@@ -25,7 +25,7 @@ const getChannelStats = asyncHandler(async (req, res) => {
     const totalVideos = await Video.aggregate([
         {
             $match: {
-                owner: mongoose.Types.ObjectId(userId)
+                owner: new mongoose.Types.ObjectId(userId)
             }
         },
         {
@@ -39,7 +39,7 @@ const getChannelStats = asyncHandler(async (req, res) => {
             }
         },
         {
-            sort: {
+            $sort: {
                 createdAt: -1
             }
         }
@@ -48,7 +48,7 @@ const getChannelStats = asyncHandler(async (req, res) => {
     const totalLikes = await Like.aggregate([
         {
             $match: {
-                video: mongoose.Types.ObjectId(userId)
+                video: new mongoose.Types.ObjectId(userId)
             }
         },
         {
@@ -59,7 +59,7 @@ const getChannelStats = asyncHandler(async (req, res) => {
     const totalViews = await Video.aggregate([
         {
             $match: {
-                owner: mongoose.Types.ObjectId(userId)
+                owner: new mongoose.Types.ObjectId(userId)
             }
         },
         {
@@ -81,7 +81,7 @@ const getChannelStats = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(200, 'Channel stats', { stats }))
+        .json(new ApiResponse(200, { stats }, 'Channel stats'))
 })
 
 const getChannelVideos = asyncHandler(async (req, res) => {
@@ -92,7 +92,7 @@ const getChannelVideos = asyncHandler(async (req, res) => {
     const videos = await Video.aggregate([
         {
             $match: {
-                owner: mongoose.Types.ObjectId(userId)
+                owner: new mongoose.Types.ObjectId(userId)
             }
         },
         {
@@ -106,7 +106,7 @@ const getChannelVideos = asyncHandler(async (req, res) => {
             }
         },
         {
-            sort: {
+            $sort: {
                 createdAt: -1
             }
         }
@@ -118,7 +118,7 @@ const getChannelVideos = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(200, 'Channel videos', { videos }))
+        .json(new ApiResponse(200, { videos }, 'Channel videos'))
 })
 
 export {

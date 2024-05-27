@@ -19,7 +19,8 @@ router
     .route("/")
     .get(getAllVideos)
     .post(searchVideos)
-    .post(
+    
+    router.route("/publish").post(
         upload.fields([
             {
                 name: "videoFile",
@@ -29,17 +30,18 @@ router
                 name: "thumbnail",
                 maxCount: 1,
             },
-
+            
         ]),
+        verifyJWT,
         publishAVideo
     );
 
 router
     .route("/:videoId")
     .get(getVideoById)
-    .delete(deleteVideo)
-    .patch(upload.single("thumbnail"), updateVideo);
+    .delete(verifyJWT,deleteVideo)
+    .patch(verifyJWT,upload.single("thumbnail"), updateVideo);
 
-router.route("/toggle/publish/:videoId").patch(togglePublishStatus);
+router.route("/toggle/publish/:videoId").patch(verifyJWT,togglePublishStatus);
 
 export default router
