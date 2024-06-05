@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import morgan from "morgan";
 
 const app = express();
 
@@ -23,6 +24,9 @@ app.use(express.static("public"));
 
 // access , edit, add cookies of user browser from server
 app.use(cookieParser());
+
+ //HTTP request logger middleware for node.js 
+app.use(morgan("dev"));
 
 //routes
 import userRouter from "./routes/user.routes.js";
