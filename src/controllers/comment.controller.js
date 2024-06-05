@@ -9,6 +9,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
 
     const { videoId } = req.params
     const { page = 1, limit = 10 } = req.query
+
     const options = {
         page: parseInt(page, 10),
         limit: parseInt(limit, 10)
@@ -53,13 +54,13 @@ const getVideoComments = asyncHandler(async (req, res) => {
         ], options)
 
         if (!comments) {
-            throw new ApiError(404, "No Comments Found!", {})
+            throw new ApiError(404, {}, "No Comments Found!")
         }
 
         return res
             .status(200)
-            .json(new ApiResponse(200, "ALL OK!", { comments }))
-            
+            .json(new ApiResponse(200, { comments }, "ALL OK!"))
+
     } catch (error) {
         throw new ApiError(404, error?.message || "Error in fetching comments!")
     }
@@ -99,15 +100,15 @@ const updateComment = asyncHandler(async (req, res) => {
     // TODO: update a comment
     const { content, commentId } = req.body
 
-        const updatedComment = await Comment.findByIdAndUpdate(commentId, { content }, { new: true })
-        
-        if(!updatedComment) {
-            throw new ApiError(404, "Comment Not Found!")
-        }
+    const updatedComment = await Comment.findByIdAndUpdate(commentId, { content }, { new: true })
 
-        return res
-            .status(200)
-            .json(new ApiResponse(200, { updatedComment }, "Comment Updated Successfully!")) 
+    if (!updatedComment) {
+        throw new ApiError(404, "Comment Not Found!")
+    }
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, { updatedComment }, "Comment Updated Successfully!"))
 })
 
 const deleteComment = asyncHandler(async (req, res) => {
@@ -115,9 +116,7 @@ const deleteComment = asyncHandler(async (req, res) => {
     const { commentId } = req.params
 
     try {
-
         const comment = await Comment.findById(commentId)
-
         if (req.user?._id.toString() !== comment.owner.toString()) {
             throw new ApiError(404, "You are not authorised to delete this comment!")
         }
@@ -128,7 +127,7 @@ const deleteComment = asyncHandler(async (req, res) => {
         if (!deletedComment) {
             return res
                 .status(409)
-                .json(new ApiResponse(409, {},"Error in deleting comment!"))
+                .json(new ApiResponse(409, {}, "Error in deleting comment!"))
         }
         return res
             .status(200)

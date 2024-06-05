@@ -10,7 +10,7 @@ import { healthcheck } from "../controllers/healthcheck.controller.js"
 
 const router = Router();
 
-router.use(verifyJWT); // Apply verifyJWT middleware to all routes in this file
+// Apply verifyJWT middleware to all routes in this file
 
 router.route('/').get(healthcheck);
 
@@ -18,10 +18,10 @@ router.route('/').get(healthcheck);
 router
     .route("/:videoId")
     .get(getVideoComments)
-    .post(verifyJWT,addComment);
+    .post(verifyJWT, addComment);
 router
     .route("/c/:commentId")
-    .delete(deleteComment)
-    .patch(updateComment);
+    .delete(verifyJWT, deleteComment)
+    .patch(verifyJWT, updateComment);
 
 export default router

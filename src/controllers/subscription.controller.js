@@ -53,7 +53,7 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     // get subscribers of the channel
     const subscribers = await Subscription.aggregate([
         {
-            $match: { channel: mongoose.Types.ObjectId(channelId) }
+            $match: { channel: new mongoose.Types.ObjectId(channelId) }
         },
         {
             $lookup: {
@@ -81,42 +81,47 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
 
 // controller to return channel list to which user has subscribed
 const getSubscribedChannels = asyncHandler(async (req, res) => {
+    const { subscriberId } = req.params;
 
-    const { subscriberId } = req.params
-    // check if user exists
+    // Check if user exists
     if (!isValidObjectId(subscriberId)) {
-        throw new ApiError(400, "Invalid user id")
+        throw new ApiError(400, "Invalid user id");
     }
 
-    // get subscribed channels of the user
+    // Get subscribed channels of the user
     const channels = await Subscription.aggregate([
         {
-            $match: { subscriber: mongoose.Types.ObjectId(subscriberId) }
+            $match: { subscriber: new mongoose.Types.ObjectId(subscriberId) }
         },
         {
             $lookup: {
-                from: "channels",
+                from: "users",
                 localField: "channel",
                 foreignField: "_id",
-                as: "channels"
+                as: "channelDetails"
             }
         },
         {
+            $unwind: "$channelDetails"
+        },
+        {
             $project: {
-                _id: 0,
-                channels: {
-                    _id: 1,
-                    name: 1,
-                    description: 1
-                }
+                "channelDetails._id": 1,
+                "channelDetails.username": 1,
+                "channelDetails.email": 1,
+                "channelDetails.fullName": 1,
+                "channelDetails.avatar": 1,
             }
         }
-    ])
+    ]);
+
+    // Extract the necessary fields from the results
+    const result = channels.map(channel => channel.channelDetails);
 
     return res
         .status(200)
-        .json(new ApiResponse(200, "Subscribed channels", { channels }))
-})
+        .json(new ApiResponse(200, { channels: result }, "Subscribed channels"));
+});
 
 export {
     toggleSubscription,

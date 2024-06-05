@@ -2,6 +2,7 @@ import { Playlist } from "../models/playlist.model.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
+import mongoose from "mongoose"
 
 const createPlaylist = asyncHandler(async (req, res) => {
     
@@ -49,7 +50,37 @@ const getPlaylistById = asyncHandler(async (req, res) => {
     const { playlistId } = req.params
     //TODO: get playlist by id
 
-    const playlist = await Playlist.findById(playlistId);
+    // const playlist = await Playlist.findById(playlistId);
+    const playlist = await Playlist.aggregate([
+        {
+            $match: {
+                _id: mongoose.Types.ObjectId.createFromHexString(playlistId)
+            },
+        },
+        {
+            $lookup: {
+                from: "videos",
+                localField: "videos",
+                foreignField: "_id",
+                as: "videos"
+            }
+        },
+        {
+            $project: {
+                name: 1,
+                description: 1,
+                videos: {
+                    _id: 1,
+                    title: 1,
+                    description: 1,
+                    url: 1,
+                    thumbnail: 1,
+                    duration: 1
+                }
+            
+            }
+        }
+    ])
 
     if (!playlist) {
         throw new ApiError(404, "Playlist not found!")

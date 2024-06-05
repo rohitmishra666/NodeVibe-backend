@@ -33,6 +33,7 @@ const getChannelStats = asyncHandler(async (req, res) => {
                 thumbnail: 1,
                 title: 1,
                 views: 1,
+                description: 1,
                 createdAt: 1,
                 duration: 1,
                 isPublished: 1
@@ -42,17 +43,6 @@ const getChannelStats = asyncHandler(async (req, res) => {
             $sort: {
                 createdAt: -1
             }
-        }
-    ])
-
-    const totalLikes = await Like.aggregate([
-        {
-            $match: {
-                video: new mongoose.Types.ObjectId(userId)
-            }
-        },
-        {
-            $count: 'totalLikes'
         }
     ])
 
@@ -75,7 +65,6 @@ const getChannelStats = asyncHandler(async (req, res) => {
     const stats = {
         totalSubcribers: totalSubcribers[0]?.totalSubcribers || 0,
         totalVideos: totalVideos.length,
-        totalLikes: totalLikes[0]?.totalLikes || 0,
         totalViews: totalViews[0]?.totalViews || 0
     }
 
@@ -96,13 +85,30 @@ const getChannelVideos = asyncHandler(async (req, res) => {
             }
         },
         {
+            $lookup: {
+                from: 'likes',
+                localField: '_id',
+                foreignField: 'video',
+                as: 'likesCount'
+            }
+        },
+        {
+            $addFields: {
+                likes: {
+                    $size: '$likesCount'
+                }
+            }
+        },
+        {
             $project: {
+                likes: 1,
                 thumbnail: 1,
                 title: 1,
                 views: 1,
                 createdAt: 1,
                 duration: 1,
-                isPublished: 1
+                isPublished: 1,
+                description: 1
             }
         },
         {
@@ -113,7 +119,7 @@ const getChannelVideos = asyncHandler(async (req, res) => {
     ])
 
     if (!videos) {
-        throw new ApiError(404, 'Problem fetching videos')
+        throw new ApiError(404, 'Problem fetching videos!!')
     }
 
     return res
