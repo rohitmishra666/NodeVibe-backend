@@ -35,11 +35,6 @@ const registerUser = asyncHandler(async (req, res) => {
     // Step 9-> return response
 
     const { fullName, email, username, password } = req.body
-    // console.log("email :", email);
-
-    // if(fullName==="") {
-    //     throw new ApiError(400, "fullName is required")
-    // }
 
     if (
         [fullName, email, username, password].some((field) => field?.trim() === "")
@@ -194,7 +189,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     if (!incomingRefreshToken) {
         throw new ApiError(401, "unauthorised request")
     }
-    console.log("incomingRefreshToken", incomingRefreshToken)
+
     try {
 
         const decodedToken = jwt.verify(
@@ -260,7 +255,6 @@ const getCurrentUser = asyncHandler(async (req, res) => {
             .json(new ApiResponse(200, false, "no user found in request object"))
     }
 
-    console.log("req.user", req.user)
     return res
         .status(200)
         .json(new ApiResponse(200, req.user, "current user fetched successfully"))
