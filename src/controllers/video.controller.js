@@ -118,20 +118,19 @@ const publishAVideo = asyncHandler(async (req, res) => {
         throw new ApiError(423, "Video file and thumbnail are required!!")
     }
 
-    const localVideoPath = videoFile[0].path
-    const localThumbnailPath = thumbnail[0].path
-    // console.log(localVideoPath, "local Video path");
+    const localVideoPath = videoFile[0]?.path
+    const localThumbnailPath = thumbnail[0]?.path
+    console.log(localVideoPath, "local Video path");
+    console.log(localThumbnailPath, "local Thumbnail path");
 
-    let videoUrl = await uploadOnCloudinary(localVideoPath)
+    const videoUrl = await uploadOnCloudinary(localVideoPath)
     const thumbnailUrl = await uploadOnCloudinary(localThumbnailPath)
 
-    // console.log(videoUrl, "cloudinary response");
+    console.log(videoUrl, "cloudinary response");
     // console.log(thumbnailUrl);
-    videoUrl = null
     if (!videoUrl || !thumbnailUrl) {
         throw new ApiError(500, "Failed to upload video or thumbnail on cloudinary!!")
     }
-
 
     const video = await Video.create({
         title,
