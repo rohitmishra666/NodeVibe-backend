@@ -9,9 +9,7 @@ const createPlaylist = asyncHandler(async (req, res) => {
     const { name, description } = req.body
 
     //TODO: create playlist
-    const user = req.user
-    console.log(user)
-    
+    const user = req.user    
     if (!user) {
         throw new ApiError(401, "User Not Found!")
     }

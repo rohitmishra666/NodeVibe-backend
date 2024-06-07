@@ -6,9 +6,6 @@ import { User } from "../models/user.model.js";
 export const optionalAuth = asyncHandler(async (req, _, next) => {
     try {
         const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer", "")
-        console.log(req.cookies?.accessToken, "req.cookies?.accessToken")
-        console.log(token ? "Token found" : "Token not found")
-
         if (!token) {
             req.user = null;
             return next();
@@ -23,8 +20,6 @@ export const optionalAuth = asyncHandler(async (req, _, next) => {
 export const verifyJWT = asyncHandler(async (req, _, next) => {
     try {
         const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer", "")
-        // console.log(req.cookies?.accessToken, "req.cookies?.accessToken")
-        console.log(token ? "Token found" : "Token not found")
 
         if (!token) {
             throw new ApiError(401, "Unauthorised request")

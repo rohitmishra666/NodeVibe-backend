@@ -112,8 +112,6 @@ const publishAVideo = asyncHandler(async (req, res) => {
         throw new ApiError(422, "Title and description are required!!")
     }
 
-    // console.log(videoFile, "video file front end");
-    // console.log(thumbnail, "thumbnail front end");
     if (!videoFile || !thumbnail) {
         throw new ApiError(423, "Video file and thumbnail are required!!")
     }
@@ -127,7 +125,6 @@ const publishAVideo = asyncHandler(async (req, res) => {
     const thumbnailUrl = await uploadOnCloudinary(localThumbnailPath)
 
     console.log(videoUrl, "cloudinary response");
-    // console.log(thumbnailUrl);
     if (!videoUrl || !thumbnailUrl) {
         throw new ApiError(500, "Failed to upload video or thumbnail on cloudinary!!")
     }
@@ -342,7 +339,6 @@ const updateVideo = asyncHandler(async (req, res) => {
 
 const deleteVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
-
 
     if (!req.user) {
         throw new ApiError(401, "Please login and pass authorisation to delete video!")

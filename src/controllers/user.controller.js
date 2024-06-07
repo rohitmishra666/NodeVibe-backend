@@ -183,8 +183,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
 
-    const incomingRefreshToken =
-        req.cookies.refreshToken || req.body.refreshToken;
+    const incomingRefreshToken = req.cookies.refreshToken;
 
     if (!incomingRefreshToken) {
         throw new ApiError(401, "unauthorised request")
@@ -286,14 +285,14 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
     const { avatar } = req.files
-    console.log(avatar, "avatar")
+
     if (!avatar) {
         throw new ApiError(400, "Avatar file is missing")
     }
 
-    // const oldAvatarUrl = req.user?.avatar.lastIndexOf('/')
-    // const oldAvatarPublicId = oldAvatarUrl?.slice(oldAvatarUrl + 1, oldAvatarUrl.lastIndexOf('.'))
-    // await deleteOnCloudinary(oldAvatarPublicId)
+    const oldAvatarUrl = req.user?.avatar.lastIndexOf('/')
+    const oldAvatarPublicId = oldAvatarUrl?.slice(oldAvatarUrl + 1, oldAvatarUrl.lastIndexOf('.'))
+    await deleteOnCloudinary(oldAvatarPublicId)
 
     const updatedAvatar = await uploadOnCloudinary(avatar[0]?.path)
 
@@ -325,9 +324,9 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Cover file is missing")
     }
 
-    // const oldCoverUrl = req.user?.coverImage.lastIndexOf('/')
-    // const oldCoverPublicId = oldCoverUrl?.slice(oldCoverUrl + 1, oldCoverUrl.lastIndexOf('.'))
-    // await deleteOnCloudinary(oldCoverPublicId)
+    const oldCoverUrl = req.user?.coverImage.lastIndexOf('/')
+    const oldCoverPublicId = oldCoverUrl?.slice(oldCoverUrl + 1, oldCoverUrl.lastIndexOf('.'))
+    await deleteOnCloudinary(oldCoverPublicId)
 
     const updatedCover = await uploadOnCloudinary(coverImage[0]?.path)
 

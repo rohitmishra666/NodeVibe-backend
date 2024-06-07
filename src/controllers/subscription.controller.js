@@ -20,8 +20,6 @@ const toggleSubscription = asyncHandler(async (req, res) => {
     // check if subscription exists
     const subscribed = await Subscription.findOne({ channel: channelId, subscriber: req.user?._id });
 
-    console.log(subscribed)
-
     // if subscription exists, delete it
     if (subscribed) {
         await Subscription.findByIdAndDelete(subscribed._id)

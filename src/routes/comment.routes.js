@@ -10,8 +10,6 @@ import { healthcheck } from "../controllers/healthcheck.controller.js"
 
 const router = Router();
 
-// Apply verifyJWT middleware to all routes in this file
-
 router.route('/').get(healthcheck);
 
 
