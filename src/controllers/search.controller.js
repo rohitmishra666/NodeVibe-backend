@@ -32,11 +32,7 @@ const searchController = asyncHandler(async (req, res) => {
             {
                 $project: {
                     title: 1,
-                    // videoFile: 1,
                     thumbnail: 1,
-                    // duration: 1,
-                    // owner: 1,
-                    // isPublished: 1
                 }
             }
         ], options)

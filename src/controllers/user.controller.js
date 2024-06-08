@@ -183,14 +183,14 @@ const logoutUser = asyncHandler(async (req, res) => {
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
 
-    const incomingRefreshToken = req.cookies.refreshToken;
+    const incomingRefreshToken = req.cookies.refreshToken || req.header("Authorization").replace("Bearer ", "");
+    console.log("incomingRefreshToken", incomingRefreshToken)
 
     if (!incomingRefreshToken) {
         throw new ApiError(401, "unauthorised request")
     }
 
     try {
-
         const decodedToken = jwt.verify(
             incomingRefreshToken,
             process.env.REFRESH_TOKEN_SECRET
@@ -253,7 +253,6 @@ const getCurrentUser = asyncHandler(async (req, res) => {
             .status(200)
             .json(new ApiResponse(200, false, "no user found in request object"))
     }
-
     return res
         .status(200)
         .json(new ApiResponse(200, req.user, "current user fetched successfully"))
@@ -261,7 +260,6 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
     const { fullName, email } = req.body;
-    console.log("req.body", fullName, email)
 
     if (!fullName || !email) {
         throw new ApiError(400, "All fields are required")
@@ -277,7 +275,6 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
         },
         { new: true }
     ).select("-password")
-
     return res
         .status(200)
         .json(new ApiResponse(200, { user }, "Account details updated successfully!!"))

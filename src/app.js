@@ -7,7 +7,7 @@ const app = express();
 
 //app.use() is used for middlewares, configurations
 app.use(cors({
-    origin: process.env.CORS_ORIGIN,
+    origin: true,
     credentials: true
 }));
 
@@ -24,7 +24,7 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
  //HTTP request logger middleware for node.js 
-app.use(morgan("dev"));
+// app.use(morgan("dev"));
 
 //routes
 import userRouter from "./routes/user.routes.js";

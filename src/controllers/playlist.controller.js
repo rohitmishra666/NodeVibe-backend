@@ -5,11 +5,11 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 import mongoose from "mongoose"
 
 const createPlaylist = asyncHandler(async (req, res) => {
-    
+
     const { name, description } = req.body
 
     //TODO: create playlist
-    const user = req.user    
+    const user = req.user
     if (!user) {
         throw new ApiError(401, "User Not Found!")
     }
@@ -52,30 +52,41 @@ const getPlaylistById = asyncHandler(async (req, res) => {
     const playlist = await Playlist.aggregate([
         {
             $match: {
-                _id: mongoose.Types.ObjectId.createFromHexString(playlistId)
-            },
-        },
-        {
-            $lookup: {
-                from: "videos",
-                localField: "videos",
-                foreignField: "_id",
-                as: "videos"
+                _id: new mongoose.Types.ObjectId(playlistId)
             }
         },
         {
-            $project: {
-                name: 1,
-                description: 1,
-                videos: {
-                    _id: 1,
-                    title: 1,
-                    description: 1,
-                    url: 1,
-                    thumbnail: 1,
-                    duration: 1
-                }
-            
+            $lookup: {
+                from: 'videos',
+                localField: 'videos',
+                foreignField: '_id',
+                as: 'videos',
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: "owner",
+                            foreignField: '_id',
+                            as: 'ownerDetails'
+                        }
+                    },
+                    {
+                        $unwind: '$ownerDetails'
+                    },
+                    {
+                        $project: {
+                            title: 1,
+                            duration: 1,
+                            views: 1,
+                            createdAt: 1,
+                            thumbnail: 1,
+                            owner: {
+                                username: '$ownerDetails.username',
+                                avatar: "$ownerDetails.avatar"
+                            }
+                        }
+                    }
+                ]
             }
         }
     ])
@@ -117,6 +128,7 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
     // TODO: remove video from playlist
 
     try {
+
         const playlist = await Playlist.findByIdAndUpdate(playlistId, {
             $pull: { videos: videoId }
         }, { new: true })
@@ -137,8 +149,10 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
 
 const deletePlaylist = asyncHandler(async (req, res) => {
     const { playlistId } = req.params
-    // TODO: delete playlist
-    
+    const ownerId = Playlist.findById(playlistId).owner
+    if (ownerId?.toString() !== req.user?._id.toString()) {
+        throw new ApiError(403, "You are not authorized to delete this  playlist!")
+    }
     const playlist = await Playlist.findByIdAndDelete(playlistId)
 
     if (!playlist) {
@@ -155,6 +169,11 @@ const updatePlaylist = asyncHandler(async (req, res) => {
     const { playlistId } = req.params
     const { name, description } = req.body
     //TODO: update playlist
+    const ownerId = Playlist.findById(playlistId).owner
+
+    if(ownerId?.toString() !== req.user?._id.toString()){
+        throw new ApiError(403, "You are not authorized to add video to this playlist!")
+    }
 
     const playlist = await Playlist.findByIdAndUpdate(playlistId, {
         name,
